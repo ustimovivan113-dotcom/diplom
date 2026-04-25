@@ -1,0 +1,11 @@
+django>=4.2
+djangorestframework
+django-filter
+django-cors-headers
+djangorestframework-simplejwt
+drf-spectacular
+psycopg2-binary
+Pillow
+python-dotenv
+pytest
+pytest-django
