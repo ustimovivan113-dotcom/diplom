@@ -24,26 +24,3 @@
 3. Выполните команду:
    ```bash
    docker-compose up --build
-   ```
-4. API будет доступно по адресу: `http://localhost:8000/api/`
-5. Документация Swagger: `http://localhost:8000/api/docs/swagger/`
-
-### Локальный запуск (без Docker)
-1. Установите зависимости:
-   ```bash
-   pip install -r requirements.txt
-   ```
-2. Выполните миграции:
-   ```bash
-   python manage.py migrate
-   ```
-3. Запустите сервер:
-   ```bash
-   python manage.py runserver
-   ```
-
-## Тестирование
-Для запуска тестов используйте pytest:
-```bash
-pytest
-```

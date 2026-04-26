@@ -1,26 +1,39 @@
 from rest_framework import serializers
 from .models import Ad, Comment
-from users.serializers import UserPublicSerializer
+
 
 class CommentSerializer(serializers.ModelSerializer):
-    author_name = serializers.CharField(source='author.first_name', read_only=True)
+    author_email = serializers.ReadOnlyField(source='author.email')
 
     class Meta:
         model = Comment
-        fields = ['id', 'text', 'author', 'author_name', 'ad', 'created_at']
+        fields = ['id', 'text', 'author', 'author_email', 'ad', 'created_at', 'updated_at']
         read_only_fields = ['author', 'ad']
 
+
 class AdSerializer(serializers.ModelSerializer):
-    author = UserPublicSerializer(read_only=True)
+    author_email = serializers.ReadOnlyField(source='author.email')
+    comments_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Ad
-        fields = ['id', 'title', 'price', 'description', 'author', 'image', 'created_at']
+        fields = [
+            'id', 'title', 'price', 'description', 'author', 'author_email',
+            'image', 'status', 'created_at', 'updated_at', 'comments_count'
+        ]
+        read_only_fields = ['author']
 
-class AdDetailSerializer(serializers.ModelSerializer):
-    author = UserPublicSerializer(read_only=True)
+    def get_comments_count(self, obj):
+        return obj.comments.count()
+
+    def validate_price(self, value):
+        if value <= 0:
+            raise serializers.ValidationError('Цена должна быть больше 0')
+        return value
+
+
+class AdDetailSerializer(AdSerializer):
     comments = CommentSerializer(many=True, read_only=True)
 
-    class Meta:
-        model = Ad
-        fields = ['id', 'title', 'price', 'description', 'author', 'image', 'created_at', 'comments']
+    class Meta(AdSerializer.Meta):
+        fields = AdSerializer.Meta.fields + ['comments']

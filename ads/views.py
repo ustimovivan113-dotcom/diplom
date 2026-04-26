@@ -3,12 +3,16 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import Ad, Comment
 from .serializers import AdSerializer, AdDetailSerializer, CommentSerializer
 from .permissions import IsOwnerOrAdmin
+from .filters import AdFilter
+
 
 class AdViewSet(viewsets.ModelViewSet):
     queryset = Ad.objects.all()
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    filterset_fields = ['price']
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_class = AdFilter
     search_fields = ['title', 'description']
+    ordering_fields = ['price', 'created_at']
+    ordering = ['-created_at']
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -22,6 +26,7 @@ class AdViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
