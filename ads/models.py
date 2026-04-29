@@ -3,6 +3,7 @@ from django.conf import settings
 
 
 class Ad(models.Model):
+    """Модель объявления."""
     STATUS_CHOICES = (
         ('active', 'Активно'),
         ('closed', 'Закрыто'),
@@ -17,12 +18,8 @@ class Ad(models.Model):
         related_name='ads',
         verbose_name='Автор'
     )
-    image = models.ImageField(
-        upload_to='ads/%Y/%m/', null=True, blank=True, verbose_name='Изображение'
-    )
-    status = models.CharField(
-        max_length=10, choices=STATUS_CHOICES, default='active', verbose_name='Статус'
-    )
+    image = models.ImageField(upload_to='ads/%Y/%m/', null=True, blank=True, verbose_name='Изображение')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active', verbose_name='Статус')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
 
@@ -36,6 +33,7 @@ class Ad(models.Model):
 
 
 class Comment(models.Model):
+    """Модель комментария к объявлению."""
     text = models.TextField(verbose_name='Текст комментария')
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,

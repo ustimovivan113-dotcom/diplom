@@ -7,6 +7,7 @@ from .filters import AdFilter
 
 
 class AdViewSet(viewsets.ModelViewSet):
+    """ViewSet для объявлений: CRUD, фильтрация, поиск."""
     queryset = Ad.objects.all()
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = AdFilter
@@ -29,6 +30,7 @@ class AdViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """ViewSet для комментариев к конкретному объявлению."""
     serializer_class = CommentSerializer
 
     def get_queryset(self):

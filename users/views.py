@@ -1,43 +1,21 @@
 from rest_framework import generics, permissions
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .models import User
-from .serializers import UserSerializer, UserCreateSerializer, UserUpdateSerializer
+from django.contrib.auth import get_user_model
+from .serializers import UserSerializer, UserCreateSerializer
+
+User = get_user_model()
 
 
-class RegisterView(generics.CreateAPIView):
+class UserRegisterView(generics.CreateAPIView):
+    """Регистрация нового пользователя."""
     queryset = User.objects.all()
     serializer_class = UserCreateSerializer
     permission_classes = [permissions.AllowAny]
 
 
-class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = UserUpdateSerializer
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    """Просмотр и редактирование профиля текущего пользователя."""
+    serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
         return self.request.user
-
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return UserSerializer
-        return UserUpdateSerializer
-
-
-class UserListView(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-
-class UserDetailView(generics.RetrieveAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-
-class CustomTokenObtainPairView(TokenObtainPairView):
-    pass
-
-
-class CustomTokenRefreshView(TokenRefreshView):
-    pass
