@@ -55,7 +55,7 @@ def test_update_profile(authenticated_client, user):
 @pytest.mark.django_db
 def test_jwt_login(api_client, user):
     """Тест получения JWT токена"""
-    url = '/api/users/login/'
+    url = '/api/users/token/'  # ← ИСПРАВЛЕНО ЗДЕСЬ
     data = {'email': user.email, 'password': 'password123'}
     response = api_client.post(url, data, format='json')
     assert response.status_code == status.HTTP_200_OK
