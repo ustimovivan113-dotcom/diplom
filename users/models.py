@@ -1,11 +1,14 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+from django.utils import timezone
+
 
 class UserManager(BaseUserManager):
+    """Менеджер кастомной модели пользователя."""
     def create_user(self, email, first_name, last_name, phone, password=None, role='user'):
+        """Создаёт и возвращает обычного пользователя."""
         if not email:
             raise ValueError('Email обязателен')
-        
         user = self.model(
             email=self.normalize_email(email),
             first_name=first_name,
@@ -18,14 +21,16 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, first_name, last_name, phone, password=None):
+        """Создаёт и возвращает суперпользователя."""
         user = self.create_user(email, first_name, last_name, phone, password, role='admin')
-        user.is_admin = True
-        user.is_superuser = True
         user.is_staff = True
+        user.is_superuser = True
         user.save(using=self._db)
         return user
 
+
 class User(AbstractBaseUser, PermissionsMixin):
+    """Кастомная модель пользователя."""
     USER_ROLES = (
         ('user', 'Пользователь'),
         ('admin', 'Администратор'),
@@ -34,13 +39,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, verbose_name='Email')
     first_name = models.CharField(max_length=50, verbose_name='Имя')
     last_name = models.CharField(max_length=50, verbose_name='Фамилия')
-    phone = models.CharField(max_length=20, verbose_name='Телефон')
+    phone = models.CharField(max_length=20, blank=True, verbose_name='Телефон')
     role = models.CharField(max_length=10, choices=USER_ROLES, default='user', verbose_name='Роль')
     image = models.ImageField(upload_to='users/', null=True, blank=True, verbose_name='Аватар')
-    
+    date_joined = models.DateTimeField(default=timezone.now, verbose_name='Дата регистрации')
+
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    
+
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -49,6 +55,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+        ordering = ['-date_joined']
 
     def __str__(self):
         return self.email

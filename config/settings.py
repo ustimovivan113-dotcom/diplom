@@ -15,15 +15,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    # Third party
+
     'rest_framework',
     'corsheaders',
     'django_filters',
     'drf_spectacular',
     'rest_framework_simplejwt',
 
-    # Apps
     'users',
     'ads',
 ]
@@ -59,12 +57,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# База данных: PostgreSQL в Docker, SQLite для локальной разработки
+if os.getenv('POSTGRES_DB'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('POSTGRES_DB'),
+            'USER': os.getenv('POSTGRES_USER'),
+            'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+            'HOST': os.getenv('DB_HOST', 'db'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -75,12 +86,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-LANGUAGE_CODE = 'ru-ru'
-TIME_ZONE = 'UTC'
-USE_I18N = True
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'Europe/Moscow'
+USE_I18N = False
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -96,19 +108,24 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_PAGE_SIZE': 10,
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': False,
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-CORS_ALLOW_ALL_ORIGINS = True  # Для разработки
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+]
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Skydash Ad Board API',
@@ -116,3 +133,5 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

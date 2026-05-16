@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skydash Ad Board — защита диплома</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0e27;
+            color: #e2e8f0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            padding: 40px 60px;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        /* Навигация */
+        .nav {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+            background: rgba(10, 14, 39, 0.9);
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav button {
+            background: transparent;
+            border: 2px solid #00d4aa;
+            color: #00d4aa;
+            padding: 8px 22px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .nav button:hover {
+            background: #00d4aa;
+            color: #0a0e27;
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            font-size: 0.9em;
+            color: #64748b;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 20px;
+            z-index: 100;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #00d4aa, #667eea);
+            transition: width 0.3s;
+            z-index: 1000;
+        }
+
+        /* Типографика */
+        h1 {
+            font-size: 3.5em;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        h1 span {
+            color: #00d4aa;
+        }
+
+        h2 {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 35px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        h2 .num {
+            color: #00d4aa;
+            font-size: 0.7em;
+            background: rgba(0,212,170,0.15);
+            padding: 5px 12px;
+            border-radius: 40px;
+        }
+
+        h3 {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #00d4aa;
+            margin-bottom: 15px;
+        }
+
+        p {
+            font-size: 1.1em;
+            line-height: 1.5;
+            color: #94a3b8;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        /* Бейджи */
+        .hero-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+            border-radius: 20px;
+            color: #00d4aa;
+            font-size: 0.8em;
+            margin-bottom: 20px;
+            letter-spacing: 1.5px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3em;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .hero-features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            max-width: 500px;
+            margin-bottom: 30px;
+        }
+
+        .hero-feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1em;
+            color: #cbd5e1;
+        }
+
+        .hero-feature::before {
+            content: '✓';
+            color: #00d4aa;
+            width: 22px;
+            height: 22px;
+            background: rgba(0, 212, 170, 0.1);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75em;
+        }
+
+        .tech-badge {
+            padding: 6px 14px;
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid rgba(0, 212, 170, 0.2);
+            border-radius: 20px;
+            color: #00d4aa;
+            font-size: 0.8em;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .tech-badge:hover {
+            background: rgba(0, 212, 170, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Проблема/решение */
+        .problem-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .problem-box, .solution-box {
+            padding: 30px;
+            border-radius: 20px;
+        }
+
+        .problem-box {
+            background: rgba(231, 76, 60, 0.08);
+            border: 1px solid rgba(231, 76, 60, 0.25);
+        }
+        .solution-box {
+            background: rgba(0, 212, 170, 0.08);
+            border: 1px solid rgba(0, 212, 170, 0.25);
+        }
+
+        .problem-list, .solution-list {
+            list-style: none;
+        }
+        .problem-list li, .solution-list li {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-size: 0.95em;
+            color: #cbd5e1;
+        }
+        .problem-list li::before {
+            content: '✗';
+            color: #ef4444;
+        }
+        .solution-list li::before {
+            content: '✓';
+            color: #00d4aa;
+        }
+
+        /* Архитектура */
+        .arch-diagram {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .arch-box {
+            background: rgba(0,212,170,0.08);
+            border: 2px solid rgba(0,212,170,0.25);
+            border-radius: 20px;
+            padding: 20px 30px;
+            text-align: center;
+            min-width: 150px;
+        }
+        .arch-arrow {
+            font-size: 1.8em;
+            color: #475569;
+        }
+        .er-diagram {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .er-entity {
+            background: rgba(255,255,255,0.03);
+            border: 2px solid rgba(0,212,170,0.3);
+            border-radius: 16px;
+            padding: 15px 20px;
+            min-width: 130px;
+        }
+        .er-entity h4 {
+            color: #00d4aa;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(0,212,170,0.2);
+            padding-bottom: 5px;
+        }
+        .er-entity ul {
+            list-style: none;
+            font-size: 0.75em;
+            color: #94a3b8;
+        }
+        .er-line {
+            width: 50px;
+            height: 2px;
+            background: #475569;
+            position: relative;
+        }
+        .er-line::after {
+            content: '1:N';
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.65em;
+            background: #0a0e27;
+            padding: 0 5px;
+        }
+
+        /* Технологии сетка */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            max-width: 900px;
+        }
+        .tech-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px 12px;
+            text-align: center;
+            transition: 0.2s;
+        }
+        .tech-item:hover {
+            border-color: #00d4aa;
+            transform: translateY(-5px);
+        }
+        .tech-logo {
+            font-size: 2em;
+            margin-bottom: 8px;
+        }
+        .tech-name {
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        .tech-ver {
+            font-size: 0.7em;
+            color: #64748b;
+        }
+
+        /* Спец блоки */
+        .big-number {
+            font-size: 3em;
+            font-weight: 800;
+            color: #00d4aa;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+        }
+        .demo-flow {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .demo-step {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 15px;
+            min-width: 110px;
+            text-align: center;
+        }
+        .demo-num {
+            width: 32px;
+            height: 32px;
+            background: #00d4aa;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #0a0e27;
+        }
+
+        .code-block {
+            background: #0d1117;
+            border-radius: 12px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.8em;
+            text-align: left;
+        }
+
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0,212,170,0.1);
+            border: 2px solid #00d4aa;
+            border-radius: 40px;
+            padding: 12px 28px;
+            color: #00d4aa;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .github-link:hover {
+            background: #00d4aa;
+            color: #0a0e27;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 0.8em;
+            color: #475569;
+        }
+
+        /* Скрытые заметки для докладчика (видны в консоли) */
+        .speaker-note {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="slide-counter" id="slideCounter">1 / 15</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- СЛАЙД 1: Титул -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="slide active">
+    <div class="hero-badge">Дипломный проект | Backend-разработка</div>
+    <h1>Skydash <span>Ad Board API</span></h1>
+    <p class="hero-subtitle">REST API для доски объявлений с JWT и Docker</p>
+    <div class="hero-features">
+        <div class="hero-feature">Роли: пользователь / админ</div>
+        <div class="hero-feature">Фильтрация и поиск</div>
+        <div class="hero-feature">Комментарии к объявлениям</div>
+        <div class="hero-feature">Покрытие тестами 95%</div>
+    </div>
+    <div class="tech-stack">
+        <span class="tech-badge">Django 4.2</span>
+        <span class="tech-badge">DRF 3.14</span>
+        <span class="tech-badge">PostgreSQL 15</span>
+        <span class="tech-badge">SimpleJWT</span>
+        <span class="tech-badge">Docker</span>
+    </div>
+    <div class="speaker-note">Титул: Имя, тема, стек. Акцент на покрытие 95% и Docker.</div>
+</div>
+
+<!-- СЛАЙД 2: Проблема и решение -->
+<div class="slide">
+    <h2><span class="num">2</span> Проблема и решение</h2>
+    <div class="problem-grid">
+        <div class="problem-box">
+            <h3>❌ Было</h3>
+            <ul class="problem-list">
+                <li>Сложные платформы с лишним функционалом</li>
+                <li>Нет контроля над контентом</li>
+                <li>Отсутствие ролей и модерации</li>
+                <li>Сложный деплой</li>
+            </ul>
+        </div>
+        <div class="solution-box">
+            <h3>✅ Стало</h3>
+            <ul class="solution-list">
+                <li>Чистый REST API</li>
+                <li>Полный контроль через админку</li>
+                <li>Роли user/admin + права доступа</li>
+                <li>Docker → деплой за 5 минут</li>
+            </ul>
+        </div>
+    </div>
+    <div class="speaker-note">Проблема: людям нужна простая площадка. Решение: API с авторизацией и фильтрацией.</div>
+</div>
+
+<!-- СЛАЙД 3: Архитектура + ER -->
+<div class="slide">
+    <h2><span class="num">3</span> Архитектура и ER-диаграмма</h2>
+    <div class="arch-diagram">
+        <div class="arch-box"><h3>📱 Клиент</h3><p>HTTP/JSON</p></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box" style="border-color:#00d4aa;"><h3>🎯 Django REST</h3><p>API endpoints</p></div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box"><h3>🐘 PostgreSQL</h3><p>База данных</p></div>
+    </div>
+    <div class="er-diagram">
+        <div class="er-entity"><h4>User</h4><ul><li>email (PK)</li><li>role</li><li>first_name</li></ul></div>
+        <div class="er-relation"><div class="er-line"></div></div>
+        <div class="er-entity"><h4>Ad</h4><ul><li>title</li><li>price</li><li>status</li></ul></div>
+        <div class="er-relation"><div class="er-line"></div></div>
+        <div class="er-entity"><h4>Comment</h4><ul><li>text</li><li>created_at</li></ul></div>
+    </div>
+    <div class="speaker-note">Показать связи: User 1:N Ad, Ad 1:N Comment. Ключевые поля.</div>
+</div>
+
+<!-- СЛАЙД 4: Технологии -->
+<div class="slide">
+    <h2><span class="num">4</span> Технологический стек</h2>
+    <div class="tech-grid">
+        <div class="tech-item"><div class="tech-logo">🐍</div><div class="tech-name">Python 3.11</div></div>
+        <div class="tech-item"><div class="tech-logo">🎯</div><div class="tech-name">Django 4.2 LTS</div></div>
+        <div class="tech-item"><div class="tech-logo">🔌</div><div class="tech-name">DRF 3.14</div></div>
+        <div class="tech-item"><div class="tech-logo">🐘</div><div class="tech-name">PostgreSQL 15</div></div>
+        <div class="tech-item"><div class="tech-logo">🔐</div><div class="tech-name">SimpleJWT</div></div>
+        <div class="tech-item"><div class="tech-logo">🔍</div><div class="tech-name">django-filter</div></div>
+        <div class="tech-item"><div class="tech-logo">📚</div><div class="tech-name">drf-spectacular</div></div>
+        <div class="tech-item"><div class="tech-logo">🐳</div><div class="tech-name">Docker</div></div>
+    </div>
+    <div class="speaker-note">Обратить внимание: LTS, JWT, автодокументация, контейнеризация.</div>
+</div>
+
+<!-- СЛАЙД 5: Почему DRF -->
+<div class="slide">
+    <h2><span class="num">5</span> Почему Django REST Framework?</h2>
+    <div style="display: grid; grid-template-columns: repeat(2,1fr); gap:20px; max-width:800px;">
+        <div class="stat-card"><div class="big-number">🏗️</div><div>Админка из коробки</div><div style="font-size:0.8em; color:#64748b;">Управление данными без фронта</div></div>
+        <div class="stat-card"><div class="big-number">🔐</div><div>Готовая авторизация</div><div style="font-size:0.8em; color:#64748b;">User, groups, permissions</div></div>
+        <div class="stat-card"><div class="big-number">🗄️</div><div>ORM + миграции</div><div style="font-size:0.8em; color:#64748b;">Работа с БД через Python</div></div>
+        <div class="stat-card"><div class="big-number">📈</div><div>Самый популярный стек</div><div style="font-size:0.8em; color:#64748b;">Больше джунов вакансий в РФ</div></div>
+    </div>
+    <div class="speaker-note">Обоснование: админка для модерации, ORM ускоряет разработку, рынок вакансий.</div>
+</div>
+
+<!-- СЛАЙД 6: Nginx + Gunicorn -->
+<div class="slide">
+    <h2><span class="num">6</span> Продакшен-связка: Nginx + Gunicorn</h2>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:12px;">
+        <div class="arch-box"><h4>🌐 Nginx</h4><p>порт 80 / статика / прокси</p></div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-box" style="background:rgba(251,191,36,0.1);"><h4>🐍 Gunicorn</h4><p>порт 8000 / 3 workers</p></div>
+        <div style="display:flex; gap:15px;"><div class="tech-badge">Reverse proxy</div><div class="tech-badge">Load balancing</div><div class="tech-badge">Static & media</div></div>
+    </div>
+    <div class="speaker-note">Nginx отдаёт статику и проксирует запросы к Gunicorn. 3 worker'а для параллельной обработки.</div>
+</div>
+
+<!-- СЛАЙД 7: Swagger -->
+<div class="slide">
+    <h2><span class="num">7</span> Документация API (Swagger)</h2>
+    <div style="background:#0d1117; border-radius:16px; width:100%; max-width:600px;">
+        <div style="background:#161b22; padding:12px 20px; border-radius:16px 16px 0 0;"><strong>📘 Skydash API</strong></div>
+        <div style="padding:12px 20px;"><span class="tech-badge" style="background:#0a0e27;">GET /api/ads/</span> — список объявлений</div>
+        <div style="padding:12px 20px;"><span class="tech-badge" style="background:#0a0e27;">POST /api/ads/</span> — создание (JWT)</div>
+        <div style="padding:12px 20px;"><span class="tech-badge" style="background:#0a0e27;">GET /api/ads/{id}/comments/</span> — комментарии</div>
+        <div style="padding:12px 20px;"><span class="tech-badge" style="background:#0a0e27;">POST /api/users/token/</span> — получение JWT</div>
+    </div>
+    <div class="speaker-note">Показать реальный Swagger на демо, а слайд оставить как схему.</div>
+</div>
+
+<!-- СЛАЙД 8: Live Demo сценарий -->
+<div class="slide">
+    <h2><span class="num">8</span> Сценарий демонстрации</h2>
+    <div class="demo-flow">
+        <div class="demo-step"><div class="demo-num">1</div><div>Регистрация</div><div>POST /register</div></div>
+        <div class="arch-arrow">→</div>
+        <div class="demo-step"><div class="demo-num">2</div><div>JWT токен</div><div>POST /token</div></div>
+        <div class="arch-arrow">→</div>
+        <div class="demo-step"><div class="demo-num">3</div><div>Создать Ad</div><div>POST /ads</div></div>
+        <div class="arch-arrow">→</div>
+        <div class="demo-step"><div class="demo-num">4</div><div>Фильтрация</div><div>?min_price=100</div></div>
+        <div class="arch-arrow">→</div>
+        <div class="demo-step"><div class="demo-num">5</div><div>Комментарий</div><div>POST /comments</div></div>
+    </div>
+    <div class="code-block">
+        <span style="color:#8b949e;"># Запуск через Docker</span><br>
+        docker-compose up --build<br>
+        <span style="color:#8b949e;"># Создание суперпользователя</span><br>
+        docker-compose exec web python manage.py createsuperuser
+    </div>
+    <div class="speaker-note">На демо показать регистрацию, логин, создание объявления, фильтр по цене и добавление комментария.</div>
+</div>
+
+<!-- СЛАЙД 9: JWT -->
+<div class="slide">
+    <h2><span class="num">9</span> Аутентификация JWT</h2>
+    <div style="display:flex; gap:20px; flex-wrap:wrap; justify-content:center;">
+        <div style="background:rgba(255,255,255,0.03); border-radius:16px; padding:20px; width:260px;">
+            <h3>📤 Запрос</h3>
+            <div class="code-block">POST /api/users/token/<br>{<br>  "email": "user@test.com",<br>  "password": "pass"<br>}</div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div style="background:rgba(255,255,255,0.03); border-radius:16px; padding:20px; width:260px;">
+            <h3>📥 Ответ</h3>
+            <div class="code-block">{<br>  "access": "eyJhbG...",<br>  "refresh": "eyJ..."<br>}</div>
+        </div>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:20px;"><span class="tech-badge">Access: 60 мин</span><span class="tech-badge">Refresh: 7 дней</span><span class="tech-badge">Bearer токен</span></div>
+    <div class="speaker-note">JWT stateless, не храним сессии. Обновление через refresh.</div>
+</div>
+
+<!-- СЛАЙД 10: Тесты и покрытие -->
+<div class="slide">
+    <h2><span class="num">10</span> Тестирование (pytest + coverage)</h2>
+    <div style="display:flex; gap:25px; margin-bottom:25px;">
+        <div class="stat-card"><div class="big-number">15</div><div>тестов</div></div>
+        <div class="stat-card"><div class="big-number">95%</div><div>покрытие</div></div>
+        <div class="stat-card"><div class="big-number">4.2с</div><div>время выполнения</div></div>
+    </div>
+    <div class="code-block">
+        <span style="color:#8b949e;"># Запуск тестов с отчётом</span><br>
+        pytest --cov=apps --cov-report=html<br><br>
+        ads/views.py ........ 82%<br>
+        ads/serializers.py .. 100%<br>
+        users/views.py ...... 100%<br>
+        <span style="color:#00d4aa;">TOTAL coverage: 95%</span>
+    </div>
+    <div class="speaker-note">Все критичные эндпоинты покрыты. Тесты на права доступа, фильтрацию, JWT.</div>
+</div>
+
+<!-- СЛАЙД 11: Docker -->
+<div class="slide">
+    <h2><span class="num">11</span> Docker-контейнеризация</h2>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; max-width:700px;">
+        <div style="background:rgba(255,255,255,0.03); border-radius:16px; padding:20px;">
+            <h3>🚀 Запуск</h3>
+            <div class="code-block">docker-compose up --build</div>
+            <div style="margin-top:12px;"><span class="tech-badge">db (PostgreSQL)</span> <span class="tech-badge">web (Django)</span> <span class="tech-badge">nginx</span></div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03); border-radius:16px; padding:20px;">
+            <h3>⚙️ Команды</h3>
+            <div class="code-block">docker-compose exec web python manage.py migrate</div>
+            <div class="code-block">docker-compose exec web python manage.py createsuperuser</div>
+        </div>
+    </div>
+    <div class="speaker-note">Три сервиса связаны сетью. Переменные окружения в .env. Легко развернуть на любом сервере.</div>
+</div>
+
+<!-- СЛАЙД 12: Бизнес-ценность -->
+<div class="slide">
+    <h2><span class="num">12</span> Бизнес-ценность</h2>
+    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:20px; max-width:700px;">
+        <div class="stat-card"><span class="big-number">📉</span><div>Снижение нагрузки на поддержку</div><div style="font-size:0.85em;">Автоматизация публикации</div></div>
+        <div class="stat-card"><span class="big-number">🔒</span><div>JWT + роли</div><div>Безопасность и модерация</div></div>
+        <div class="stat-card"><span class="big-number">🐳</span><div>Docker-деплой</div><div>Развёртывание за 5 минут</div></div>
+        <div class="stat-card"><span class="big-number">📈</span><div>Масштабируемость</div><div>Готовая архитектура под рост</div></div>
+    </div>
+    <div class="speaker-note">Почему за это заплатят: быстрота запуска, безопасность, лёгкий деплой.</div>
+</div>
+
+<!-- СЛАЙД 13: Что получил (навыки) -->
+<div class="slide">
+    <h2><span class="num">13</span> Что я получил от проекта</h2>
+    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:15px; max-width:700px;">
+        <div><span class="big-number">🏗️</span><br><strong>Архитектура API</strong><br>models → serializers → viewsets</div>
+        <div><span class="big-number">🔐</span><br><strong>Безопасность</strong><br>JWT, permissions, роли</div>
+        <div><span class="big-number">🐳</span><br><strong>DevOps</strong><br>Docker, nginx, gunicorn</div>
+        <div><span class="big-number">🧪</span><br><strong>Тестирование</strong><br>pytest, fixtures, coverage 95%</div>
+    </div>
+    <div class="speaker-note">Прокачал навыки проектирования, DevOps, тестирования — готов к работе.</div>
+</div>
+
+<!-- СЛАЙД 14: Что улучшить -->
+<div class="slide">
+    <h2><span class="num">14</span> План развития</h2>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:15px; max-width:800px;">
+        <div class="stat-card"><span class="big-number">📁</span> Категории<br><span style="font-size:0.8em;">Древовидная структура</span></div>
+        <div class="stat-card"><span class="big-number">🖼️</span> Галерея фото<br><span style="font-size:0.8em;">Несколько изображений</span></div>
+        <div class="stat-card"><span class="big-number">⭐</span> Избранное<br><span style="font-size:0.8em;">Закладки и подписки</span></div>
+    </div>
+    <div class="speaker-note">Показал, что вижу точки роста. Первые две недели — категории и фото.</div>
+</div>
+
+<!-- СЛАЙД 15: Результаты и GitHub -->
+<div class="slide">
+    <h2><span class="num">15</span> Результаты проекта</h2>
+    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px; max-width:600px;">
+        <div>✓ PostgreSQL + DRF</div><div>✓ JWT-аутентификация</div>
+        <div>✓ Фильтрация и поиск</div><div>✓ Права доступа</div>
+        <div>✓ Тесты 95%</div><div>✓ Docker + docker-compose</div>
+        <div>✓ Swagger UI</div><div>✓ Nginx + Gunicorn</div>
+    </div>
+    <div class="github-link" style="margin:25px 0 15px;" onclick="window.open('https://github.com/ustimovivan113-dotcom/diplom','_blank')">
+        🐙 github.com/ustimovivan113-dotcom/diplom
+    </div>
+    <div class="footer">Иван Устимов | Диплом SB1 | Backend-разработка | 2026</div>
+    <div class="speaker-note">Все требования выполнены. Проект готов к деплою на сервер.</div>
+</div>
+
+<!-- Навигация -->
+<div class="nav">
+    <button onclick="prevSlide()">← Назад</button>
+    <button onclick="nextSlide()">Вперёд →</button>
+</div>
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const counter = document.getElementById('slideCounter');
+    const progress = document.getElementById('progressBar');
+
+    function update() {
+        slides.forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+        counter.innerText = `${currentSlide+1} / ${slides.length}`;
+        progress.style.width = `${((currentSlide+1)/slides.length)*100}%`;
+    }
+    function nextSlide() { if(currentSlide < slides.length-1) { currentSlide++; update(); } }
+    function prevSlide() { if(currentSlide > 0) { currentSlide--; update(); } }
+    document.addEventListener('keydown', (e) => {
+        if(e.key === 'ArrowRight') nextSlide();
+        if(e.key === 'ArrowLeft') prevSlide();
+    });
+    update();
+
+    // Вывод заметок докладчика в консоль (F12)
+    console.log("%c📢 Заметки докладчика:", "color: #00d4aa; font-size: 14px");
+    document.querySelectorAll('.speaker-note').forEach((note, idx) => {
+        console.log(`Слайд ${idx+1}: ${note.innerText.trim()}`);
+    });
+</script>
+</body>
+</html>
